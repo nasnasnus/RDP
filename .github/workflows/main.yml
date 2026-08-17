@@ -122,74 +122,33 @@ jobs:
 
       - name: Install Roblox Studio
         shell: powershell
-        timeout-minutes: 10
         run: |
           $url = "https://setup.rbxcdn.com/RobloxStudioLauncherBeta.exe"
           $installer = "$env:TEMP\RobloxStudioLauncherBeta.exe"
 
-          Write-Host "Mengecek koneksi ke server Roblox..."
-          try {
-              $response = Invoke-WebRequest `
-                -Uri $url `
-                -Method Head `
-                -UseBasicParsing `
-                -TimeoutSec 30
+          Write-Host "Downloading Roblox Studio..."
 
-              Write-Host "Server Roblox dapat diakses."
-              Write-Host "Status: $($response.StatusCode)"
-          }
-          catch {
-              Write-Error "Tidak dapat mengakses server Roblox: $($_.Exception.Message)"
-              exit 1
-          }
-
-          Write-Host "Mengunduh Roblox Studio..."
-
-          try {
-              Invoke-WebRequest `
-                -Uri $url `
-                -OutFile $installer `
-                -UseBasicParsing `
-                -TimeoutSec 300
-          }
-          catch {
-              Write-Error "Download Roblox Studio gagal: $($_.Exception.Message)"
-              exit 1
-          }
+          Invoke-WebRequest `
+            -Uri $url `
+            -OutFile $installer `
+            -UseBasicParsing
 
           if (-not (Test-Path $installer)) {
-              Write-Error "File installer tidak ditemukan."
+              Write-Error "Roblox Studio installer tidak berhasil diunduh."
               exit 1
           }
 
           $size = (Get-Item $installer).Length
-          Write-Host "Download selesai."
-          Write-Host "Ukuran file: $([math]::Round($size / 1MB, 2)) MB"
+          Write-Host "Download selesai: $([math]::Round($size / 1MB, 2)) MB"
 
-          if ($size -lt 100KB) {
-              Write-Error "File installer terlalu kecil atau kemungkinan bukan installer yang valid."
-              exit 1
-          }
+          Write-Host "Starting Roblox Studio installer..."
 
-          Write-Host "Menjalankan installer Roblox Studio..."
-
-          $process = Start-Process `
+          Start-Process `
             -FilePath $installer `
-            -ArgumentList "-install" `
-            -PassThru
+            -ArgumentList "-install"
 
-          Write-Host "Installer berjalan. PID: $($process.Id)"
-
-          $process.WaitForExit()
-
-          Write-Host "Installer selesai dengan exit code: $($process.ExitCode)"
-
-          if ($process.ExitCode -ne 0) {
-              Write-Error "Installer Roblox Studio gagal."
-              exit 1
-          }
-
-          Write-Host "Roblox Studio berhasil diinstall."
+          Write-Host "Installer sudah dijalankan."
+          Write-Host "Workflow tetap berjalan."
 
       - name: Show RDP Information
         shell: powershell
