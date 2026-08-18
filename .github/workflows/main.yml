@@ -64,7 +64,32 @@ jobs:
 
           "RDP_USERNAME=Skyro" >> $env:GITHUB_ENV
           "RDP_PASSWORD=$password" >> $env:GITHUB_ENV
+          
+      - name: Skip Microsoft Edge First Run
+        shell: powershell
+        run: |
+          $edgePolicy = "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
 
+          if (-not (Test-Path $edgePolicy)) {
+            New-Item -Path $edgePolicy -Force | Out-Null
+          }
+
+          New-ItemProperty `
+            -Path $edgePolicy `
+            -Name "HideFirstRunExperience" `
+            -PropertyType DWord `
+            -Value 1 `
+            -Force | Out-Null
+
+          New-ItemProperty `
+            -Path $edgePolicy `
+            -Name "BrowserSignin" `
+            -PropertyType DWord `
+            -Value 0 `
+            -Force | Out-Null
+
+          Write-Host "Microsoft Edge First Run berhasil dilewati."
+          
       - name: Install Tailscale
         shell: powershell
         run: |
