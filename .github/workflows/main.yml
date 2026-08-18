@@ -33,22 +33,10 @@ jobs:
 
       - name: Create RDP User
         shell: powershell
+        env:
+          RDP_PASSWORD: ${{ secrets.RDP_PASSWORD }}
         run: |
-          $chars = @{
-            Upper   = [char[]](65..90)
-            Lower   = [char[]](97..122)
-            Number  = [char[]](48..57)
-            Special = [char[]](33..47)
-          }
-
-          $passwordChars = @()
-          $passwordChars += $chars.Upper | Get-Random -Count 4
-          $passwordChars += $chars.Lower | Get-Random -Count 4
-          $passwordChars += $chars.Number | Get-Random -Count 4
-          $passwordChars += $chars.Special | Get-Random -Count 4
-
-          $password = -join ($passwordChars | Sort-Object { Get-Random })
-          $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+          $securePassword = ConvertTo-SecureString $env:RDP_PASSWORD -AsPlainText -Force
 
           if (Get-LocalUser -Name "Skyro" -ErrorAction SilentlyContinue) {
             Remove-LocalUser -Name "Skyro"
@@ -63,7 +51,7 @@ jobs:
           Add-LocalGroupMember -Group "Remote Desktop Users" -Member "Skyro"
 
           "RDP_USERNAME=Skyro" >> $env:GITHUB_ENV
-          "RDP_PASSWORD=$password" >> $env:GITHUB_ENV
+          "RDP_PASSWORD=$env:RDP_PASSWORD" >> $env:GITHUB_ENV
           
       - name: Skip Microsoft Edge First Run
         shell: powershell
