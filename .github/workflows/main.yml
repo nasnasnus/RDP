@@ -179,46 +179,14 @@ jobs:
       - name: Keep Runner Alive
         shell: powershell
         run: |
-          Add-Type @"
-          using System;
-          using System.Runtime.InteropServices;
-
-          public class IdleTime {
-              [StructLayout(LayoutKind.Sequential)]
-              struct LASTINPUTINFO {
-                  public uint cbSize;
-                  public uint dwTime;
-              }
-
-              [DllImport("user32.dll")]
-              static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
-
-              public static uint GetIdleTime() {
-                  LASTINPUTINFO lii = new LASTINPUTINFO();
-                  lii.cbSize = (uint)Marshal.SizeOf(lii);
-
-                  if (GetLastInputInfo(ref lii)) {
-                      return ((uint)Environment.TickCount - lii.dwTime) / 1000;
-                  }
-
-                  return 0;
-              }
-          }
-          "@
-
-          $idleLimit = 600
+          Write-Host "======================================"
+          Write-Host "      RDP SESSION IS ACTIVE"
+          Write-Host "======================================"
+          Write-Host "Runner akan tetap hidup."
+          Write-Host "Tekan Stop workflow jika ingin menghentikannya."
+          Write-Host ""
 
           while ($true) {
-              $idleSeconds = [IdleTime]::GetIdleTime()
-              $idleMinutes = [math]::Round($idleSeconds / 60, 1)
-
-              Write-Host "[$(Get-Date)] Idle: $idleMinutes menit"
-
-              if ($idleSeconds -ge $idleLimit) {
-                  Write-Host "Tidak ada aktivitas selama 10 menit."
-                  Write-Host "Menghentikan workflow..."
-                  exit 0
-              }
-
-              Start-Sleep -Seconds 30
+              Write-Host "[$(Get-Date)] RDP masih aktif..."
+              Start-Sleep -Seconds 60
           }
